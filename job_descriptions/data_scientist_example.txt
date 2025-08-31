@@ -1,0 +1,28 @@
+Data Scientist - Machine Learning
+
+We are seeking a talented Data Scientist to join our analytics team. The ideal candidate will have strong experience in machine learning, statistical analysis, and data visualization.
+
+Key Requirements:
+- 3+ years of experience in data science or analytics
+- Proficiency in Python, R, or similar languages
+- Experience with machine learning frameworks (scikit-learn, TensorFlow, PyTorch)
+- Knowledge of statistical analysis and hypothesis testing
+- Familiarity with data visualization tools (matplotlib, seaborn, Tableau)
+- Experience with databases (SQL, NoSQL)
+- Understanding of cloud platforms (AWS, GCP, Azure)
+
+Preferred Qualifications:
+- Master's degree in Data Science, Statistics, or related field
+- Experience with big data technologies (Spark, Hadoop)
+- Knowledge of MLOps and model deployment
+- Familiarity with A/B testing and experimental design
+- Strong communication and presentation skills
+
+Responsibilities:
+- Develop and deploy machine learning models
+- Analyze large datasets to extract actionable insights
+- Collaborate with cross-functional teams on data-driven solutions
+- Create visualizations and reports for stakeholders
+- Stay updated with latest trends in data science and ML
+
+We offer competitive compensation, comprehensive benefits, and opportunities for professional growth in a data-driven environment.

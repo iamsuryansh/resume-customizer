@@ -1,0 +1,62 @@
+Full job description
+Location: Bengaluru, KA, IN
+Company: ExxonMobil
+
+About us
+
+At ExxonMobil, our vision is to lead in energy innovations that advance modern living and a net-zero future. As one of the world’s largest publicly traded energy and chemical companies, we are powered by a unique and diverse workforce fueled by the pride in what we do and what we stand for.
+
+The success of our Upstream, Product Solutions and Low Carbon Solutions businesses is the result of the talent, curiosity and drive of our people. They bring solutions every day to optimize our strategy in energy, chemicals, lubricants and lower-emissions technologies.
+
+We invite you to bring your ideas to ExxonMobil to help create sustainable solutions that improve quality of life and meet society’s evolving needs. Learn more about our What and our Why and how we can work together.
+ExxonMobil’s affiliates in India
+
+ExxonMobil’s affiliates have offices in India in Bengaluru, Mumbai and the National Capital Region.
+
+ExxonMobil’s affiliates in India supporting the Product Solutions business engage in the marketing, sales and distribution of performance as well as specialty products across chemicals and lubricants businesses. The India planning teams are also embedded with global business units for business planning and analytics.
+
+ExxonMobil’s LNG affiliate in India supporting the upstream business provides consultant services for other ExxonMobil upstream affiliates and conducts LNG market-development activities.
+
+The Global Business Center - Technology Center provides a range of technical and business support services for ExxonMobil’s operations around the globe.
+
+ExxonMobil strives to make a positive contribution to the communities where we operate and its affiliates support a range of education, health and community-building programs in India. Read more about our Corporate Responsibility Framework.
+
+To know more about ExxonMobil in India, visit ExxonMobil India and the Energy Factor India.
+What role you will play in our team
+
+
+Work with business and reserch teams to deliver high value concept analytics and development optimization space. Leading & executing POCs on APIs, Microservices, and Cloud technologies(Azure) and seeing it through to production.
+What you will do
+
+
+    Leading & executing POCs on APIs, Microservices, and Cloud technologies(Azure) and seeing it through to production.
+    Evaluates design approaches, makes architectural recommendations, and implements improvements to testing strategies
+    Partnering closely with the business to develop, test and deploy functionality in internally developed cloud apps or tools.
+    Develop and drive modern application support best practices with maintainability, reliability, scalability, integration, monitoring, & automation improvements
+    Partner with business and global customers on change management
+    Improve reliability by implementing monitoring improvements and automate processes
+
+About You
+
+
+Skills and Qualifications
+
+    Bachelor’s degree in engineering from an accredited university
+    3+ years of experience in Software Development
+    Be extremely proficient in Python and libraries like Numpy, Pandas
+    Azure –
+        Web Apps, Function Apps, Web Jobs, VMs, ARM Templates, PowerShell
+        Software Engineering best practices: CI/CD, Microservices, RESTful services, MVC, OOAD, SOLID principles, and automated testing
+        Good grasp of the REST architectural style and experience implementing REST APIs
+        Database knowledge : primarily SQL
+    Software testing using Pytest, Nunit, Moq (or any other mocking framework)
+
+Preferred Qualifications/ Experience
+
+
+    Basic knowledge of Databricks development is a plus
+    Basic knowledge of Angular or react
+    DevOps practices using tools like GitHub Actions
+    Good to have working knowledge of the following:
+        MLOps deployment
+

@@ -1,0 +1,77 @@
+\documentclass{resume} % Use the custom resume.cls style
+
+\usepackage[left=0.4 in,top=0.4in,right=0.4 in,bottom=0.4in]{geometry} % Document margins
+
+\newcommand{\tab}[1]{\hspace{.2667\textwidth}\rlap{#1}} 
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+
+\name{Your Name} % Your name
+
+\address{+1 (555) 123-4567 \\ your.email@example.com} 
+\address{\href{https://linkedin.com/in/yourprofile}{LinkedIn} \\ \href{https://yourportfolio.com}{Portfolio} \\ \href{https://github.com/yourusername}{GitHub}}
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%     SUMMARY
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{SUMMARY}
+{Software Engineer with X years of experience building scalable applications and backend systems. Proficient in modern frameworks, cloud technologies, and collaborative development practices.}
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%    WORK EXPERIENCE SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{EXPERIENCE}
+
+\textbf{Company Name} \hfill City, Country
+Software Engineer \hfill Date - Present
+
+ \begin{itemize}
+    \itemsep -1pt {}
+    \item Developed scalable backend systems and APIs
+    \item Collaborated with cross-functional teams
+    \item Implemented CI/CD pipelines and automated testing
+    \item Optimized application performance and reliability
+ \end{itemize}
+
+\textbf{Previous Company} \hfill City, Country
+Junior Developer \hfill Date - Date
+
+ \begin{itemize}
+    \itemsep -1pt {} 
+    \item Built web applications using modern frameworks
+    \item Participated in agile development processes
+    \item Contributed to code reviews and documentation
+ \end{itemize}
+
+\end{rSection} 
+
+%----------------------------------------------------------------------------------------
+% TECHNICAL SKILLS    
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{SKILLS}
+
+\begin{tabular}{ @{} >{\bfseries}l @{\hspace{6ex} \vspace{0.75ex}} l }
+Programming & Python, JavaScript, Java, SQL\\
+Frameworks & FastAPI, Flask, React, Node.js\\
+DevOps \& Cloud & Docker, Kubernetes, AWS, CI/CD\\
+Databases & MySQL, PostgreSQL, MongoDB\\
+Tools & Git, Linux, REST APIs\\
+\end{tabular}
+
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%    EDUCATION SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Education}
+{\bf Bachelor of Science - University Name} \hfill {Year - Year}
+Computer Science \hfill {GPA: X.XX}
+\end{rSection}
+
+\end{document}
