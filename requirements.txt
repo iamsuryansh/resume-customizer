@@ -1,1 +1,2 @@
 google-generativeai>=0.3.0
+# Configuration management uses standard library configparser

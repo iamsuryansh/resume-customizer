@@ -18,27 +18,39 @@ import subprocess
 import datetime
 from pathlib import Path
 import google.generativeai as genai
-from typing import Optional
+from typing import Optional, Tuple
+
+from config_manager import ConfigManager
 
 
 class ResumeCustomizer:
-    def __init__(self, api_key: str):
-        """Initialize the Resume Customizer with Gemini API key."""
+    def __init__(self, api_key: str, config: ConfigManager = None):
+        """Initialize the Resume Customizer with Gemini API key and configuration."""
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Use provided config or create default
+        self.config = config if config else ConfigManager()
+        
+        # Initialize AI model
+        self.model = genai.GenerativeModel(self.config.get_ai_model())
+        
+        # Set up directories
         self.base_dir = Path(__file__).parent
-        self.templates_dir = self.base_dir / "templates"
-        self.output_dir = self.base_dir / "output"
+        self.templates_dir = self.config.get_templates_dir()
+        self.output_dir = self.config.get_output_dir()
         
         # Create output directory if it doesn't exist
         self.output_dir.mkdir(exist_ok=True)
     
     def read_resume_template(self) -> str:
         """Read the original resume.tex file."""
-        # Try templates directory first, then root directory
+        # Try configured paths
+        resume_filename = self.config.get_resume_template_name()
         resume_paths = [
-            self.templates_dir / "resume.tex",
-            self.base_dir / "resume.tex"
+            self.templates_dir / resume_filename,
+            self.base_dir / resume_filename,
+            self.templates_dir / "resume.tex",  # fallback
+            self.base_dir / "resume.tex"        # fallback
         ]
         
         for resume_path in resume_paths:
@@ -46,21 +58,24 @@ class ResumeCustomizer:
                 with open(resume_path, 'r', encoding='utf-8') as file:
                     return file.read()
         
-        raise FileNotFoundError(f"Resume template not found in {resume_paths}")
+        raise FileNotFoundError(f"Resume template not found in {[str(p) for p in resume_paths]}")
     
     def get_cls_file_path(self) -> Path:
         """Get the path to the resume.cls file."""
-        # Try templates directory first, then root directory
+        # Try configured paths
+        cls_filename = self.config.get_resume_class_name()
         cls_paths = [
-            self.templates_dir / "resume.cls",
-            self.base_dir / "resume.cls"
+            self.templates_dir / cls_filename,
+            self.base_dir / cls_filename,
+            self.templates_dir / "resume.cls",  # fallback
+            self.base_dir / "resume.cls"        # fallback
         ]
         
         for cls_path in cls_paths:
             if cls_path.exists():
                 return cls_path
         
-        raise FileNotFoundError(f"Resume class file not found in {cls_paths}")
+        raise FileNotFoundError(f"Resume class file not found in {[str(p) for p in cls_paths]}")
     
     def read_job_description(self, job_input: str, is_file: bool = False) -> str:
         """Read job description from text or file."""
@@ -76,51 +91,54 @@ class ResumeCustomizer:
     
     def customize_resume_with_gemini(self, resume_content: str, job_description: str) -> str:
         """Send resume and job description to Gemini for customization."""
-        prompt = f"""
-You are an expert resume writer. I will provide you with:
-1. My current resume in LaTeX format
-2. A job description for a position I'm applying to
-
-Please customize my resume to better match the job requirements while keeping the same LaTeX structure and formatting. Focus on:
-- Highlighting relevant skills and experiences that match the job requirements
-- Adjusting the summary/objective to align with the role
-- Reordering or emphasizing experiences that are most relevant
-- Using keywords from the job description where appropriate
-- Maintaining professional tone and accuracy
-
-IMPORTANT: 
-- Return ONLY the modified LaTeX content, no explanations or markdown formatting
-- Keep the same document structure and LaTeX commands
-- Don't add any content that isn't true or verifiable
-- Preserve all LaTeX formatting and commands exactly
-
-Here's my current resume:
-{resume_content}
-
-Here's the job description:
-{job_description}
-
-Please provide the customized resume in LaTeX format:
-"""
+        # Build prompt using configuration
+        prompt = self.config.build_ai_prompt(resume_content, job_description)
         
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
-        except Exception as e:
-            raise Exception(f"Error communicating with Gemini: {str(e)}")
+        max_retries = self.config.get_max_retries()
+        
+        for attempt in range(max_retries):
+            try:
+                response = self.model.generate_content(prompt)
+                result = response.text.strip()
+                
+                # Remove any code block markers if present
+                if result.startswith('```'):
+                    # Find the end of the opening code block marker
+                    first_newline = result.find('\n')
+                    if first_newline != -1:
+                        result = result[first_newline + 1:]
+                
+                if result.endswith('```'):
+                    result = result[:-3].rstrip()
+                
+                return result
+                
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️  Attempt {attempt + 1} failed, retrying... ({str(e)})")
+                    continue
+                else:
+                    raise Exception(f"Error communicating with Gemini after {max_retries} attempts: {str(e)}")
     
     def save_customized_resume(self, content: str, job_title: str = None) -> Path:
         """Save the customized resume content to a new .tex file."""
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Generate filename based on configuration
+        filename_parts = ["resume"]
         
         if job_title:
             # Clean job title for filename
+            max_length = self.config.get_max_job_title_length()
             clean_title = "".join(c for c in job_title if c.isalnum() or c in (' ', '-', '_')).strip()
-            clean_title = clean_title.replace(' ', '_')[:50]  # Limit length
-            filename = f"resume_{clean_title}_{timestamp}.tex"
+            clean_title = clean_title.replace(' ', '_')[:max_length]
+            filename_parts.append(clean_title)
         else:
-            filename = f"resume_customized_{timestamp}.tex"
+            filename_parts.append("customized")
         
+        if self.config.should_include_timestamp():
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename_parts.append(timestamp)
+        
+        filename = "_".join(filename_parts) + ".tex"
         output_path = self.output_dir / filename
         
         with open(output_path, 'w', encoding='utf-8') as file:
@@ -133,7 +151,7 @@ Please provide the customized resume in LaTeX format:
         # Copy the .cls file to output directory if it exists
         try:
             cls_source = self.get_cls_file_path()
-            cls_dest = self.output_dir / "resume.cls"
+            cls_dest = self.output_dir / cls_source.name
             import shutil
             shutil.copy2(cls_source, cls_dest)
         except FileNotFoundError as e:
@@ -145,16 +163,24 @@ Please provide the customized resume in LaTeX format:
         os.chdir(self.output_dir)
         
         try:
-            # Run pdflatex twice (standard for LaTeX compilation)
-            for i in range(2):
-                result = subprocess.run([
-                    'pdflatex', 
-                    '-interaction=nonstopmode',
-                    tex_file_path.name
-                ], capture_output=True, text=True)
+            # Get compilation settings from config
+            compiler = self.config.get_latex_compiler()
+            passes = self.config.get_compilation_passes()
+            options = self.config.get_compiler_options()
+            
+            # Run LaTeX compilation
+            for i in range(passes):
+                print(f"📊 Running {compiler} (pass {i+1}/{passes})...")
+                
+                cmd = [compiler] + options + [tex_file_path.name]
+                result = subprocess.run(cmd, capture_output=True, text=True)
                 
                 if result.returncode != 0:
-                    raise Exception(f"LaTeX compilation failed:\n{result.stdout}\n{result.stderr}")
+                    error_msg = f"LaTeX compilation failed on pass {i+1}:\n"
+                    error_msg += f"Command: {' '.join(cmd)}\n"
+                    error_msg += f"STDOUT:\n{result.stdout}\n"
+                    error_msg += f"STDERR:\n{result.stderr}"
+                    raise Exception(error_msg)
             
             pdf_path = tex_file_path.with_suffix('.pdf')
             if not pdf_path.exists():
@@ -167,22 +193,35 @@ Please provide the customized resume in LaTeX format:
     
     def cleanup_latex_files(self, tex_file_path: Path):
         """Clean up auxiliary LaTeX files (.aux, .log, etc.)."""
-        aux_extensions = ['.aux', '.log', '.out', '.fdb_latexmk', '.fls']
+        if not self.config.should_cleanup_aux_files():
+            print("🔧 Skipping cleanup (disabled in config)")
+            return
+        
+        aux_extensions = self.config.get_aux_extensions()
+        cleaned_count = 0
+        
         for ext in aux_extensions:
             aux_file = tex_file_path.with_suffix(ext)
             if aux_file.exists():
                 aux_file.unlink()
+                cleaned_count += 1
+        
+        if cleaned_count > 0:
+            print(f"🧹 Cleaned up {cleaned_count} auxiliary files")
     
-    def process_resume(self, job_input: str, is_file: bool = False, job_title: str = None) -> tuple[Path, Path]:
+    def process_resume(self, job_input: str, is_file: bool = False, job_title: str = None) -> Tuple[Path, Path]:
         """Main method to process resume customization."""
         print("📄 Reading resume template...")
         resume_content = self.read_resume_template()
+        print(f"   📏 Resume content: {len(resume_content)} characters")
         
         print("💼 Reading job description...")
         job_description = self.read_job_description(job_input, is_file)
+        print(f"   📏 Job description: {len(job_description)} characters")
         
-        print("🤖 Customizing resume with Gemini AI...")
+        print(f"🤖 Customizing resume with {self.config.get_ai_model()}...")
         customized_content = self.customize_resume_with_gemini(resume_content, job_description)
+        print(f"   📏 Customized content: {len(customized_content)} characters")
         
         print("💾 Saving customized resume...")
         tex_path = self.save_customized_resume(customized_content, job_title)
@@ -190,7 +229,7 @@ Please provide the customized resume in LaTeX format:
         print("📊 Compiling PDF...")
         pdf_path = self.compile_pdf(tex_path)
         
-        print("🧹 Cleaning up auxiliary files...")
+        print("🧹 Managing auxiliary files...")
         self.cleanup_latex_files(tex_path)
         
         return tex_path, pdf_path
@@ -200,7 +239,7 @@ def main():
     parser = argparse.ArgumentParser(description="Customize resume for specific job using Gemini AI")
     
     # Job description input (mutually exclusive)
-    job_group = parser.add_mutually_exclusive_group(required=True)
+    job_group = parser.add_mutually_exclusive_group(required=False)
     job_group.add_argument('--job-description', '-d', 
                           help="Job description as text")
     job_group.add_argument('--job-file', '-f', 
@@ -211,20 +250,52 @@ def main():
                        help="Job title for better file naming")
     parser.add_argument('--api-key', '-k', 
                        help="Gemini API key (or set GEMINI_API_KEY environment variable)")
+    parser.add_argument('--config-dir', '-c',
+                       help="Directory containing config files (default: current directory)")
+    parser.add_argument('--show-config', action='store_true',
+                       help="Show current configuration and exit")
+    parser.add_argument('--model', '-m',
+                       help="Override AI model to use (e.g., gemini-1.5-pro)")
     
     args = parser.parse_args()
     
-    # Get API key
-    api_key = args.api_key or os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        print("❌ Error: Please provide Gemini API key via --api-key or GEMINI_API_KEY environment variable")
-        sys.exit(1)
-    
     try:
-        # Initialize customizer
-        customizer = ResumeCustomizer(api_key)
+        # Initialize configuration
+        config_dir = Path(args.config_dir) if args.config_dir else None
+        config = ConfigManager(config_dir)
         
-        # Determine input type
+        # Override model if specified
+        if args.model:
+            config.update_config('ai', 'model', args.model)
+        
+        # Show configuration if requested
+        if args.show_config:
+            print("📋 Current Configuration:")
+            print("-" * 40)
+            for key, value in config.get_config_summary().items():
+                print(f"  {key.replace('_', ' ').title()}: {value}")
+            return
+        
+        # Check if job description is provided for customization
+        if not args.job_description and not args.job_file:
+            parser.error("Job description is required for resume customization. Use --job-description or --job-file, or --show-config to view configuration.")
+        
+        # Get API key
+        api_key = args.api_key or os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            print("❌ Error: Please provide Gemini API key via --api-key or GEMINI_API_KEY environment variable")
+            sys.exit(1)
+        
+        # Initialize customizer with configuration
+        customizer = ResumeCustomizer(api_key, config)
+        
+        # Show configuration summary
+        print(f"🔧 Using model: {config.get_ai_model()}")
+        print(f"📁 Templates directory: {config.get_templates_dir()}")
+        print(f"📂 Output directory: {config.get_output_dir()}")
+        print()
+        
+        # Determine input type and process
         if args.job_file:
             tex_path, pdf_path = customizer.process_resume(
                 args.job_file, 
@@ -238,9 +309,14 @@ def main():
                 job_title=args.job_title
             )
         
+        # Show results
+        tex_size = tex_path.stat().st_size
+        pdf_size = pdf_path.stat().st_size
+        
         print("\n✅ Resume customization completed successfully!")
         print(f"📄 LaTeX file: {tex_path}")
         print(f"📋 PDF file: {pdf_path}")
+        print(f"📊 File sizes: LaTeX={tex_size:,} bytes, PDF={pdf_size:,} bytes")
         
     except FileNotFoundError as e:
         print(f"❌ File Error: {e}")

@@ -79,7 +79,19 @@ python quick_job.py
 ```
 
 ### Customize Resume for Any Job
+
+The tool is now fully configurable through configuration files:
+
 ```bash
+# Show current configuration
+python resume_customizer.py --show-config
+
+# Use custom configuration directory
+python resume_customizer.py --config-dir /path/to/config --job-file job.txt
+
+# Use specific AI model
+python resume_customizer.py --model gemini-1.5-pro --job-file job.txt
+
 # Using your existing job_description.txt
 python resume_customizer.py --job-file job_description.txt --job-title "ExxonMobil Software Engineer"
 
@@ -90,11 +102,49 @@ python resume_customizer.py --job-file job_descriptions/another_job.txt --job-ti
 python resume_customizer.py --job-description "Your job description text here" --job-title "Job Title"
 ```
 
+## Configuration Management
+
+The tool uses a flexible configuration system for better maintainability:
+
+### Configuration Files
+- `config.ini`: Main configuration settings (AI model, paths, LaTeX settings, output preferences)
+- `prompts.ini`: AI prompt templates and customization instructions
+
+### Configuration Tool
+Use the included configuration utility to manage settings:
+
+```bash
+# Show current configuration
+python config_tool.py show
+
+# Set a configuration value
+python config_tool.py set ai.model gemini-1.5-pro
+
+# Show available models
+python config_tool.py models
+
+# Validate configuration
+python config_tool.py validate
+
+# Reset to defaults
+python config_tool.py reset
+
+# Show current prompt template
+python config_tool.py prompt
+
+# Edit prompt section
+python config_tool.py edit-prompt customization focus_areas "technical skills, project experience, leadership"
+```
+
 ## Project Structure
 
 ```
 resume_io/
 ├── resume_customizer.py          # Main application
+├── config_manager.py             # Configuration management system
+├── config_tool.py                # Configuration utility
+├── config.ini                    # Main configuration settings
+├── prompts.ini                   # AI prompt templates
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # This file
 ├── .env.example                  # Environment variables template
@@ -112,9 +162,12 @@ resume_io/
 ## Command Line Options
 
 - `--job-description, -d`: Job description as direct text input
-- `--job-file, -f`: Path to text file containing job description
+- `--job-file, -f`: Path to text file containing job description  
 - `--job-title, -t`: Job title for better file naming (optional)
 - `--api-key, -k`: Gemini API key (optional if set as environment variable)
+- `--config-dir`: Custom configuration directory (optional)
+- `--show-config`: Display current configuration settings
+- `--model`: Override AI model for this run (optional)
 
 ## Examples
 
